@@ -1,7 +1,7 @@
 <?php
     session_start();
     include "../config/database.php";
-
+    
     if (!isset($_SESSION['role']) || $_SESSION['role'] != 'user') {
         header("Location: ../auth/login.php");
         exit();
@@ -236,6 +236,10 @@
 
             <!-- SIDEBAR -->
             <div class="sidebar">
+                <a href="profile.php">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
                 <a href="dashboard.php">
                     <i class="fa-solid fa-house"></i>
                     Dashboard

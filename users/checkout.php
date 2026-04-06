@@ -9,6 +9,15 @@
 
     $username = $_SESSION['username'];
 
+    // ambil data user
+    $user_query = mysqli_query($conn, "
+        SELECT username, email, phone, address
+        FROM users
+        WHERE username = '$username'
+    ");
+
+    $user = mysqli_fetch_assoc($user_query);
+
 
     //ambil data
     $query = mysqli_query($conn, "
@@ -377,11 +386,23 @@
 
                 <!-- CUSTOMER FORM -->
                 <div class="box">
-                    <label>No HP</label>
-                    <input type="text" name="phone" required>
+                   <label>No HP</label>
+                    <input 
+                        type="text" 
+                        name="phone" 
+                        value="<?= $user['phone'] ?? '' ?>" 
+                        required
+                    >
                     <label>Alamat</label>
-                    <textarea name="address" required></textarea>
+                    <textarea name="address" required><?= $user['address'] ?? '' ?></textarea>
                     <label>Metode Pembayaran</label>
+
+                    <?php if (empty($user['phone']) || empty($user['address'])): ?>
+                        <p style="color:red;">
+                            Harap lengkapi data profile dulu biar ga ribet pas checkout
+                        </p>
+                    <?php endif; ?>
+                    
                     <div class="payment-method">
                         <label>
                             <input type="radio" name="method" value="transfer" checked>
@@ -392,10 +413,14 @@
                             COD
                         </label>
                     </div>
-                    <div id="proof-box">
+                   <div id="proof-box" style="display:none;">
+                        <p id="transfer-text" style="color:#215E61; font-weight:bold; margin-bottom:10px;">
+                            Silahkan transfer ke nomor rekening tersebut: 999999999999
+                        </p>
 
                         <label>Upload Bukti Transfer</label>
                         <input type="file" name="proof">
+
                     </div>
                     <button class="btn" name="checkout">
                         Checkout Sekarang

@@ -93,10 +93,11 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <style>
 
-            body {
+           body {
                 margin: 0;
                 font-family: 'Segoe UI', sans-serif;
                 background: #338C91;
+                overflow: hidden;
             }
 
             /* HEADER */
@@ -136,17 +137,22 @@
 
 
             /* LAYOUT */
-            .container {
+             .container {
                 display: flex;
+                height: calc(100vh - 70px);
             }
 
 
+
             /* SIDEBAR */
-            .sidebar {
+           .sidebar {
                 width: 240px;
                 background: #2a7579;
                 padding: 30px 20px;
-                min-height: 100vh;
+                height: 100%;
+                position: sticky;
+                top: 0;
+                overflow: hidden;
             }
 
             .sidebar a {
@@ -163,9 +169,11 @@
 
 
             /* CONTENT */
-            .content {
+             .content {
                 flex: 1;
                 padding: 40px;
+                height: 100%;
+                overflow-y: auto;
             }
 
             .title {
