@@ -19,16 +19,17 @@
 
     //ambil data
     $queryStock = mysqli_query($conn, "SELECT * FROM products");
-    $querySales = mysqli_query($conn, "SELECT 
-            t.id,
-            t.customer_name,
-            t.quantity,
-            t.total_price,
-            t.created_at,
+    $querySales = mysqli_query($conn, "
+        SELECT 
             p.name AS product_name,
-            p.category
+            p.category,
+            SUM(t.quantity) AS total_sold,
+            SUM(t.quantity * p.price) AS total_revenue
         FROM transactions t
-        JOIN products p ON t.product_id = p.id");
+        JOIN products p ON t.product_id = p.id
+        WHERE t.checkout_status = 'checkout'
+        GROUP BY t.product_id
+    ");
     $queryTransaction = mysqli_query($conn, "
         SELECT 
             t.id,
@@ -236,34 +237,23 @@
             <!-- SALES -->
             <div id="sales" class="tab-content">
                 <table>
-                    <thead>
+                   <thead>
                         <tr>
                             <th>No</th>
-                            <th>Customer</th>
                             <th>Product</th>
-                            <th>Date</th>
-                            <th>Quantity</th>
-                            <th>Total</th>
-                            <th>Action</th>
+                            <th>Category</th>
+                            <th>Total Terjual</th>
+                            <th>Total Pendapatan</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $no=1; while($row=mysqli_fetch_assoc($querySales)){ ?>
                             <tr>
                                 <td><?= $no++ ?></td>
-                                <td><?= $row['customer_name'] ?></td>
                                 <td><?= $row['product_name'] ?></td>
-                                <td><?= $row['created_at'] ?></td>
-                                <td><?= $row['quantity'] ?></td>
-                                <td>Rp<?= number_format($row['total_price'],0,',','.') ?></td>
-                                <td>
-                                    <a href="print_receipt.php?id=<?= $row['id'] ?>" 
-                                        target="_blank"
-                                        class="btn-action">
-                                        <i class="fa-solid fa-eye"></i> Print Receipt
-                                    </a>
-
-                                </td>
+                                <td><?= $row['category'] ?></td>
+                                <td><?= $row['total_sold'] ?></td>
+                                <td>Rp<?= number_format($row['total_revenue'],0,',','.') ?></td>
                             </tr>
                         <?php } ?>
                     </tbody>
