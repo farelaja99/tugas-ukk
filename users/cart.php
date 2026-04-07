@@ -111,28 +111,18 @@
             }
 
             .logo {
-                font-size: 28px;
+                font-size: 32px;
                 font-weight: bold;
-            }
-
-            .search-box {
-                flex: 1;
+                font-style: italic;
                 display: flex;
-                background: #e5e9d5;
-                padding: 8px 15px;
-                border-radius: 25px;
-            }
-
-            .search-box input {
-                border: none;
-                outline: none;
-                flex: 1;
-                background: transparent;
+                align-items: center;
+                gap: 10px;
             }
 
             .history-btn {
                 font-size: 22px;
                 cursor: pointer;
+                margin-left: auto;
             }
 
 
@@ -146,28 +136,74 @@
 
             /* SIDEBAR */
            .sidebar {
-                width: 240px;
+                width: 200px;
                 background: #2a7579;
                 padding: 30px 20px;
                 height: 100%;
                 position: sticky;
                 top: 0;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
 
-            .sidebar a {
-                display: block;
-                color: white;
-                text-decoration: none;
-                padding: 10px;
-                margin-bottom: 10px;
+            .user-box{
+                text-align:center;
+                margin-bottom:25px;
             }
 
-            .sidebar a:hover {
-                background: rgba(255, 255, 255, 0.1);
+            .user-avatar{
+                width:60px;
+                height:60px;
+                border-radius:50%;
+                background:#e5e9d5;
+                color:#215E61;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:25px;
+                margin:0 auto 10px;
             }
 
+            .user-name{
+                color:#e5e9d5;
+                font-weight:600;
+            }
 
+            .sidebar a{
+                display:flex;
+                align-items:center;
+                gap:12px;
+                color:white;
+                text-decoration:none;
+                padding:10px 12px;
+                border-radius:10px;
+                margin-bottom:8px;
+                transition:0.25s;
+                font-size:17px;
+            }
+
+            .sidebar a:hover{
+                background:rgba(255,255,255,0.2);
+                transform:translateX(5px);
+            }
+
+            .sidebar a.active{
+                background:#e5e9d5;
+                color:#215E61;
+                font-weight:bold;
+            }
+
+            .logout-section {
+                margin-top: auto;
+                padding-bottom: 40px;
+            }
+
+            .menu-title{
+                color: #e5e9d5;
+                font-size:12px;
+                letter-spacing:1px;
+            }
             /* CONTENT */
              .content {
                 flex: 1;
@@ -254,32 +290,48 @@
             <div class="logo">
                 Theomart
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Search product...">
-            </div>
             <div class="history-btn"
                 onclick="location.href='riwayat.php'">
-                <i class="fa fa-clock-rotate-left"></i>
+                <i class="fa-solid fa-clock-rotate-left"></i>
             </div>
         </div>
-
         <div class="container">
 
             <!-- SIDEBAR -->
             <div class="sidebar">
 
-                <a href="dashboard.php">
-                    <i class="fa fa-house"></i>
+                <div class="user-box">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="user-name">
+                        <?= $_SESSION['username']; ?>
+                    </div>
+                </div>
+
+                <a href="profile.php" class="<?= basename($_SERVER['PHP_SELF'])=='profile.php' ? 'active' : '' ?>">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF'])=='dashboard.php' ? 'active' : '' ?>">
+                    <i class="fa-solid fa-house"></i>
                     Dashboard
                 </a>
-                <a href="cart.php">
-                    <i class="fa fa-cart-shopping"></i>
+
+                <a href="cart.php" class="<?= basename($_SERVER['PHP_SELF'])=='cart.php' ? 'active' : '' ?>">
+                    <i class="fa-solid fa-cart-shopping"></i>
                     Cart
                 </a>
-                <a href="../auth/logout.php">
-                    <i class="fa fa-right-from-bracket"></i>
-                    Logout
-                </a>
+
+                <div class="logout-section">
+                    <div class="menu-title">Account</div>
+
+                    <a href="../auth/logout.php">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Logout
+                    </a>
+                </div>
             </div>
 
 

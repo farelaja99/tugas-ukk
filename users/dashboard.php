@@ -124,16 +124,16 @@
         /* LAYOUT */
         .container {
             display: flex;
-            height: calc(100vh - 70px); /* 70px kira2 tinggi header */
+            height: calc(100vh - 70px); 
         }
 
         /* SIDEBAR */
         .sidebar {
-            width: 240px;
+            width: 200px;
             background: #2a7579;
             padding: 30px 20px;
             height: 100%;
-            overflow: hidden; /* sidebar ga scroll */
+            overflow: hidden; 
             position: sticky;
             top: 0;
         }
@@ -146,67 +146,139 @@
             opacity: 0.8;
         }
 
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-            padding: 8px 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.2s;
+        .user-box{
+            text-align:center;
+            margin-bottom:25px;
         }
 
-        .sidebar a:hover {
-            background: rgba(255,255,255,0.15);
+        .user-avatar{
+            width:60px;
+            height:60px;
+            border-radius:50%;
+            background:#e5e9d5;
+            color:#215E61;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            margin:0 auto 10px;
+        }
+
+        .user-name{
+            color:#e5e9d5;
+            font-weight:600;
+        }
+
+        .sidebar a{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            color:white;
+            text-decoration:none;
+            padding:10px 12px;
+            border-radius:10px;
+            margin-bottom:8px;
+            transition:0.25s;
+            font-size:17px;
+        }
+
+        .sidebar a:hover{
+            background:rgba(255,255,255,0.2);
+            transform:translateX(5px);
+        }
+
+        .sidebar a.active{
+            background:#e5e9d5;
+            color:#215E61;
+            font-weight:bold;
+        }
+
+        .menu-title{
+            font-size:12px;
+            letter-spacing:1px;
         }
 
         /* PRODUCT AREA */
          .product-area {
             flex: 1;
             padding: 40px;
-            overflow-y: auto; /* INI KUNCINYA */
+            overflow-y: auto; 
             height: 100%;
         }
         .product-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 25px;
+            gap: 30px;
         }
 
         .card {
             background: #e5e9d5;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 15px;
-            text-align: center;
+            text-align: left;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         .card img {
             width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 12px;
+            transition: 0.3s;
         }
 
+        .card:hover img {
+            transform: scale(1.05);
+        }
+
+        /* CATEGORY BADGE */
+        .category-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #215E61;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* TEXT */
         .card h4 {
-            margin: 10px 0 5px;
+            margin: 12px 0 5px;
             color: #215E61;
+            font-size: 16px;
         }
 
-        .card p {
+        .price {
             color: #215E61;
             font-weight: bold;
+            font-size: 15px;
         }
 
+        /* BUTTON */
         .card button {
-            margin-top: 8px;
+            margin-top: 10px;
+            width: 100%;
             background: #215E61;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card button:hover {
+            background: #184548;
         }
 
         </style>
@@ -236,15 +308,23 @@
 
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <a href="profile.php">
+                <div class="user-box">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="user-name">
+                        <?= $_SESSION['username']; ?>
+                    </div>
+                </div>
+                <a href="profile.php" class="<?= basename($_SERVER['PHP_SELF'])=='profile.php' ? 'active' : '' ?>">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
-                <a href="dashboard.php">
+                <a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF'])=='dashboard.php' ? 'active' : '' ?>">
                     <i class="fa-solid fa-house"></i>
                     Dashboard
                 </a>
-                <a href="cart.php">
+                <a href="cart.php" class="<?= basename($_SERVER['PHP_SELF'])=='cart.php' ? 'active' : '' ?>">
                     <i class="fa-solid fa-cart-shopping"></i>
                     Cart
                 </a>
@@ -276,22 +356,26 @@
 
                         <?php while ($row = mysqli_fetch_assoc($products)): ?>
                             <div class="card">
+
+                                <div class="category-badge">
+                                    <?= $row['category']; ?>
+                                </div>
+
                                 <img src="../uploads/<?= $row['photo']; ?>">
+
                                 <h4><?= $row['name']; ?></h4>
-                                <p>
+
+                                <div class="price">
                                     Rp <?= number_format($row['price'], 0, ',', '.'); ?>
-                                </p>
+                                </div>
+
                                 <form method="POST">
-                                    <input
-                                        type="hidden"
-                                        name="product_id"
-                                        value="<?= $row['id']; ?>"
-                                    >
+                                    <input type="hidden" name="product_id" value="<?= $row['id']; ?>">
                                     <button type="submit" name="add_to_cart">
-                                        <i class="fa-solid fa-cart-plus"></i>
-                                        Add to cart
+                                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
                                     </button>
                                 </form>
+
                             </div>
                         <?php endwhile; ?>
 

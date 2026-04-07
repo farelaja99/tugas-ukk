@@ -44,6 +44,7 @@
             p.category
         FROM transactions t
         JOIN products p ON t.product_id = p.id
+        WHERE t.status = 'Paid'
     ");
 ?>
 
