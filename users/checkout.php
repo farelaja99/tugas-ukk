@@ -58,6 +58,7 @@
         $phone   = mysqli_real_escape_string($conn, $_POST['phone']);
         $address = mysqli_real_escape_string($conn, $_POST['address']);
         $method  = mysqli_real_escape_string($conn, $_POST['method']);
+        $courier = mysqli_real_escape_string($conn, $_POST['courier']);
 
         $proof = NULL;
 
@@ -100,11 +101,6 @@
                 $id         = $item['id'];
                 $product_id = $item['product_id'];
                 $qty        = $item['quantity'];
-
-
-                // =========================
-                // CEK STOCK DULU
-                // =========================
                 $check = mysqli_fetch_assoc(mysqli_query($conn, "
                     SELECT stock FROM products
                     WHERE id='$product_id'
@@ -114,14 +110,12 @@
                     throw new Exception("Stock tidak cukup");
                 }
 
-
-                // =========================
-                // UPDATE TRANSACTION
-                // =========================
                 mysqli_query($conn, "
                     UPDATE transactions SET
                         phone = '$phone',
                         address = '$address',
+                        shipping_courier = '$courier',
+                        shipping_status = 'processed',
                         payment_method = '$method',
                         proof_photo = " . ($proof ? "'$proof'" : "NULL") . ",
                         checkout_status = 'checkout'
@@ -283,6 +277,15 @@
                 font-weight: normal;
             }
 
+            select {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                border: none;
+                background: #f4f4f4;
+                margin-bottom: 15px;
+            }
+
 
             /* BUTTON */
             .btn {
@@ -403,20 +406,27 @@
 
                 <!-- CUSTOMER FORM -->
                 <div class="box">
-                   <label>No HP</label>
+                   <label>Phone Number</label>
                     <input 
                         type="text" 
                         name="phone" 
                         value="<?= $user['phone'] ?? '' ?>" 
                         required
                     >
-                    <label>Alamat</label>
+                    <label>Address</label>
                     <textarea name="address" required><?= $user['address'] ?? '' ?></textarea>
-                    <label>Metode Pembayaran</label>
+                    <label>delivery courier</label>
+                    <select name="courier" required>
+                        <option value="">select courier</option>
+                        <option value="JNE">JNE</option>
+                        <option value="J&T">J&T</option>
+                        <option value="SiCepat">SiCepat</option>
+                    </select>
+                    <label>payment method</label>
 
                     <?php if (empty($user['phone']) || empty($user['address'])): ?>
                         <p style="color:red;">
-                            Harap lengkapi data profile dulu biar ga ribet pas checkout
+                            Please complete your profile data first to avoid complications when checking out.    
                         </p>
                     <?php endif; ?>
                     
@@ -432,20 +442,20 @@
                     </div>
                    <div id="proof-box" style="display:none;">
                         <p id="transfer-text" style="color:#215E61; font-weight:bold; margin-bottom:10px;">
-                            Silahkan transfer ke nomor rekening tersebut: 999999999999
+                            Please transfer to the account number: 999999999999
                         </p>
 
-                        <label>Upload Bukti Transfer</label>
+                        <label>Upload Proof of Transfer</label>
                         <input type="file" name="proof">
                          <?php if (empty($user['phone']) || empty($user['address'])): ?>
                             <p style="color:red;">
-                                Harap lengkapi data profile dulu biar ga ribet pas checkout
+                                Please complete your profile data first to avoid complications when checking out.
                             </p>
                         <?php endif; ?>
 
                     </div>
                     <button class="btn" name="checkout">
-                        Checkout Sekarang
+                        Checkout Now
                     </button>
                 </div>
             </form>
@@ -455,11 +465,11 @@
 
             <div class="modal">
                 <div class="modal-box">
-                    <h2>Terimakasih sudah order!</h2>
-                    <p>Pesanan kamu sedang diproses.</p>
+                    <h2>Thank you for ordering!</h2>
+                    <p>Your order is being processed.</p>
                     <a href="dashboard.php">
                         <button class="btn">
-                            Kembali ke Dashboard
+                            Back to Dashboard
                         </button>
                     </a>
                 </div>

@@ -44,7 +44,7 @@
             p.category
         FROM transactions t
         JOIN products p ON t.product_id = p.id
-        WHERE t.status = 'Paid'
+        WHERE t.checkout_status = 'checkout'
     ");
 
 
@@ -157,13 +157,42 @@
                 background:#f2f2f2;
             }
 
-            .btn-action{
-                background:#2F6F6D;
-                color:white;
+            .btn-group {
+                display:flex;
+                justify-content:center;
+                gap:8px;
+            }
+
+            .btn {
                 padding:6px 12px;
-                border-radius:4px;
+                border-radius:6px;
                 text-decoration:none;
                 font-size:13px;
+                display:inline-flex;
+                align-items:center;
+                gap:6px;
+                font-weight:600;
+                transition:0.2s;
+            }
+
+            /* DELETE (danger) */
+            .btn-delete {
+                background:#e74c3c;
+                color:white;
+            }
+
+            .btn-delete:hover {
+                background:#c0392b;
+            }
+
+            /* VIEW / PRINT */
+            .btn-view {
+                background:#215E61;
+                color:white;
+            }
+
+            .btn-view:hover {
+                background:#174446;
             }
 
             .tab-content{
@@ -211,20 +240,21 @@
                     </thead>
                     <tbody>
                         <?php $no=1; while($row=mysqli_fetch_assoc($queryStock)){ ?>
-                        <tr>
-                            <td><?= $no++ ?></td>
-                            <td><?= $row['name'] ?></td>
-                            <td><?= $row['category'] ?></td>
-                            <td><?= $row['stock'] ?></td>
-                            <td>
-                               <a href="?delete_product=<?= $row['id'] ?>"
-                                    onclick="return confirm('Yakin mau hapus produk ini?')"
-                                    class="btn-action">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-
-                            </td>
-                        </tr>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= $row['name'] ?></td>
+                                <td><?= $row['category'] ?></td>
+                                <td><?= $row['stock'] ?></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="?delete_product=<?= $row['id'] ?>"
+                                            onclick="return confirm('Delete this product?')"
+                                            class="btn btn-delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         <?php } ?>
                     </tbody>
                 </table>
@@ -304,12 +334,19 @@
                                 <td><?= $row['quantity'] ?></td>
                                 <td>Rp<?= number_format($row['total_price'],0,',','.') ?></td>
                                 <td>
-                                   <a href="../admin/print_receipt.php?id=<?= $row['id'] ?>" 
-                                        target="_blank"
-                                        class="btn-action">
-                                        <i class="fa-solid fa-eye"></i> Print Receipt
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="../admin/print_receipt.php?id=<?= $row['id'] ?>" 
+                                            target="_blank"
+                                            class="btn btn-view">
+                                            <i class="fa-solid fa-receipt"></i>
+                                        </a>
 
+                                        <a href="?delete_transaction=<?= $row['id'] ?>"
+                                            onclick="return confirm('Delete this transaction?')"
+                                            class="btn btn-delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php } ?>
@@ -320,16 +357,16 @@
         </div>
 
         <script>
-        function showTab(evt, tabId){
-            const tabs=document.querySelectorAll('.tab-content');
-            const buttons=document.querySelectorAll('.tab-btn');
+            function showTab(evt, tabId){
+                const tabs=document.querySelectorAll('.tab-content');
+                const buttons=document.querySelectorAll('.tab-btn');
 
-            tabs.forEach(tab=>tab.classList.remove('active'));
-            buttons.forEach(btn=>btn.classList.remove('active'));
+                tabs.forEach(tab=>tab.classList.remove('active'));
+                buttons.forEach(btn=>btn.classList.remove('active'));
 
-            document.getElementById(tabId).classList.add('active');
-            evt.currentTarget.classList.add('active');
-        }
+                document.getElementById(tabId).classList.add('active');
+                evt.currentTarget.classList.add('active');
+            }
         </script>
 
     </body>

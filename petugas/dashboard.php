@@ -134,6 +134,12 @@
                     <p>Process and manage refund requests</p>
                 </a>
 
+                <a href="shipping.php" class="card">
+                    <i class="fa-solid fa-truck"></i>
+                    <h3>Shipping Management</h3>
+                    <p>Handle product delivery and tracking</p>
+                </a>
+
             </div>
 
         </div>

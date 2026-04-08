@@ -1,193 +1,208 @@
 <?php
     session_start();
+
+    if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
+        header("Location: ../auth/login.php");
+        exit();
+    }
+
     include "../config/database.php";
+
+    //update status
+    if(isset($_GET['action']) && isset($_GET['id'])){
+
+        $id = intval($_GET['id']);
+        $action = $_GET['action'];
+
+        if($action == 'confirm'){
+            $status = 'Paid';
+        } elseif($action == 'cancel'){
+            $status = 'Cancelled';
+        } else {
+            $status = 'Pending';
+        }
+
+        mysqli_query($conn,"UPDATE transactions 
+                            SET status='$status' 
+                            WHERE id='$id'");
+
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    }
 
     //ambil data
     $data = mysqli_query($conn, "
-        SELECT 
-            t.*,
-            p.name AS product_name,
-            p.category
+        SELECT t.*, p.name AS product_name, p.category
         FROM transactions t
         JOIN products p ON t.product_id = p.id
+        WHERE t.checkout_status = 'checkout'
         ORDER BY t.id DESC
-");
+    ");
 ?>
-
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Transaction Management</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Transaction Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        <style>
-            body{
-                margin:0;
-                font-family:'Segoe UI',sans-serif;
-                background:#338C91;
-            }
+    <style>
+        body{
+            margin:0;
+            font-family:'Segoe UI',sans-serif;
+            background:#338C91;
+        }
 
-            /* HEADER */
-            .header{
-                background:#215E61;
-                padding:18px 50px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                color:#F5FBE6;
-            }
+        .header{
+            background:#215E61;
+            padding:18px 50px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            color:white;
+        }
 
-            .logo{
-                font-size:38px;
-                font-weight:bold;
-                font-style:italic;
-                color:#F5FBE6;
-            }
+        .logo{
+            font-size:38px;
+            font-weight:bold;
+            font-style:italic;
+        }
 
-            .back-btn{
-                background:#F5FBE6;
-                color:#215E61;
-                padding:8px 18px;
-                border-radius:8px;
-                text-decoration:none;
-                display:flex;
-                align-items:center;
-                gap:8px;
-                font-weight:600;
-            }
+        .back-btn{
+            background:#e5e9d5;
+            color:#1b4e50;
+            padding:8px 18px;
+            border-radius:8px;
+            text-decoration:none;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight:600;
+        }
 
-            /* CONTENT */
-            .container{
-                padding:40px 60px;
-                color:#F5FBE6;
-            }
+        .container{
+            padding:40px 60px;
+            color:white;
+        }
 
-            .title{
-                font-size:30px;
-                margin-bottom:20px;
-                color:#F5FBE6;
-            }
+        .title{
+            font-size:30px;
+            margin-bottom:20px;
+            color:#F5FBE6;
+        }
 
-            /* TABLE */
-            .table-wrapper{
-                background:#F5FBE6;
-                border-radius:12px;
-                overflow:hidden;
-            }
+        .table-wrapper{
+            background:#e5e9d5;
+            border-radius:12px;
+            overflow:hidden;
+        }
 
-            table{
-                width:100%;
-                border-collapse:collapse;
-            }
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
 
-            th{
-                background:#215E61;
-                color:#F5FBE6;
-                padding:15px;
-                text-align:center;
-                font-size:14px;
-            }
+        th{
+            background:#215E61;
+            color:white;
+            padding:15px;
+            text-align:center;
+        }
 
-            td{
-                padding:12px;
-                text-align:center;
-                border-bottom:1px solid #338C91;
-                color:#215E61;
-                font-size:14px;
-                background:#F5FBE6;
-            }
+        td{
+            padding:15px;
+            text-align:center;
+            border-bottom:1px solid #ccc;
+            color:#215E61;
+        }
 
-            /* ACTION BUTTON */
-            .action-btn{
-                padding:7px 14px;
-                border-radius:8px;
-                font-size:13px;
-                text-decoration:none;
-                color:#F5FBE6;
-                margin:0 3px;
-                display:inline-block;
-                cursor:pointer;
-            }
+       .action-btn{
+            padding:7px 14px;
+            border-radius:8px;
+            font-size:13px;
+            text-decoration:none;
+            color:white;
+            margin:2px;
+            display:inline-block;
+            transition:0.3s;
+        }
 
-            .view{
-                background: #215E61;
-            }
+        .confirm{ background:#215E61; }
+        .confirm:hover{ background:#174446; }
 
-            .print{
-                background: #215E61;
-            }
+        .cancel{ background:#999; }
+        .cancel:hover{ background:#777; }
 
-            /* STATUS */
-            .status{
-                padding:5px 10px;
-                border-radius:6px;
-                font-size:12px;
-                font-weight:bold;
-            }
+        .print{ background:#215E61; }
+        .print:hover{ background:#174446; }
 
-            .pending{
-                background: #ffdd00;
-                color: #F5FBE6;
-            }
+        .badge{
+            padding:5px 10px;
+            border-radius:8px;
+            font-size:12px;
+            font-weight:bold;
+            display:inline-block;
+        }
 
-            .paid{
-                background: #2bff00;
-                color: #F5FBE6;
-            }
+        .success{
+            background:#d4edda;
+            color:#155724;
+        }
 
-            .cancelled{
-                background: #ff0000;
-                color: #F5FBE6;
-            }
+        .danger{
+            background:#f8d7da;
+            color:#721c24;
+        }
 
-            /* MODAL */
-            .modal{
-                position:fixed;
-                top:0;
-                left:0;
-                width:100%;
-                height:100%;
-                background:#215E61;
-                display:flex;
-                justify-content:center;
-                align-items:center;
-                opacity:0;
-                pointer-events:none;
-                transition:0.3s;
-            }
+        .view{ background:#215E61; }
+        .print{ background:#215E61; }
 
-            .modal.active{
-                opacity:1;
-                pointer-events:auto;
-            }
+        .modal{
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.6);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            opacity:0;
+            pointer-events:none;
+            transition:0.3s;
+        }
 
-            .modal-content{
-                background:#F5FBE6;
-                padding:20px;
-                border-radius:12px;
-                text-align:center;
-                color:#215E61;
-            }
+        .modal.active{
+            opacity:1;
+            pointer-events:auto;
+        }
 
-            .modal-content img{
-                max-width:500px;
-                max-height:500px;
-                border-radius:10px;
-            }
+        .modal-content{
+            background:#F5FBE6;
+            padding:20px;
+            border-radius:12px;
+            text-align:center;
+        }
 
-            .close-btn{
-                margin-top:15px;
-                background: #ff0000;
-                color: #F5FBE6;
-                border:none;
-                padding:8px 20px;
-                border-radius:8px;
-                cursor:pointer;
-            }
+        .modal-content img{
+            max-width:90%;
+            max-height:80vh;    
+            width:auto;
+            height:auto;
+            object-fit:contain;
+            border-radius:10px;
+        }
+        .close-btn{
+            margin-top:15px;
+            background:#c0392b;
+            color:white;
+            border:none;
+            padding:8px 20px;
+            border-radius:8px;
+            cursor:pointer;
+        }
         </style>
     </head>
     <body>
-
         <div class="header">
             <div class="logo">Theomart</div>
             <a href="dashboard.php" class="back-btn">
@@ -196,19 +211,21 @@
         </div>
 
         <div class="container">
+
             <div class="title">Transaction Management</div>
+
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
                             <th>Customer</th>
-                            <th>Phone</th>
-                            <th>Address</th>
                             <th>Product</th>
                             <th>Category</th>
+                            <th>Phone</th>
+                            <th>Address</th>
                             <th>Payment</th>
-                            <th>Status</th>
                             <th>Price</th>
+                            <th>Status</th>
                             <th>Proof</th>
                             <th>Action</th>
                         </tr>
@@ -218,56 +235,88 @@
                         <?php while($row=mysqli_fetch_assoc($data)) { ?>
                             <tr>
                                 <td><?= $row['customer_name']; ?></td>
-                                <td><?= $row['phone']; ?></td>
-                                <td style="max-width:200px;text-align:left;">
-                                <?= $row['address']; ?>
-                                </td>
                                 <td><?= $row['product_name']; ?></td>
                                 <td><?= $row['category']; ?></td>
-                                <td>
-                                <?php
-                                    if($row['payment_method']=="cod"){
-                                    echo "COD";
-                                    }else if($row['payment_method']=="transfer"){
-                                    echo "Transfer";
-                                    }else{
-                                    echo "-";
-                                    }
-                                ?>
-                                </td>
-                                <td>
-                                <?php
-                                    $status = $row['status'];
 
-                                    if($status=="Pending"){
-                                    echo "<span class='status pending'>Pending</span>";
-                                    }
-                                    else if($status=="Paid"){
-                                    echo "<span class='status paid'>Paid</span>";
-                                    }
-                                    else if ($status=="Cancelled"){
-                                    echo "<span class='status cancelled'>Cancelled</span>";
-                                    }
-                                ?>
+                                <td><?= $row['phone']; ?></td>
+
+                                <td style="max-width:200px;text-align:left;">
+                                    <?= $row['address']; ?>
                                 </td>
-                                <td>Rp <?= number_format($row['total_price'],0,',','.'); ?></td>
+
                                 <td>
-                                    <?php if($row['proof_photo']) { ?>
-                                    <a class="action-btn view"
-                                    onclick="openModal('../uploads/<?= $row['proof_photo']; ?>')">
-                                    View
-                                    </a>
-                                    <?php } else { ?>
-                                    -
-                                    <?php } ?>
+                                    <?php
+                                    if($row['payment_method'] == 'transfer'){
+                                        echo "<span style='color:#2980b9;font-weight:bold;'>Transfer</span>";
+                                    } elseif($row['payment_method'] == 'cod'){
+                                        echo "<span style='color:#8e44ad;font-weight:bold;'>COD</span>";
+                                    } else {
+                                        echo "-";
+                                    }
+                                    ?>
                                 </td>
+
                                 <td>
-                                    <a class="action-btn print"
-                                    href="print_receipt.php?id=<?= $row['id']; ?>"
-                                    target="_blank">
-                                    Print
-                                    </a>
+                                    Rp <?= number_format($row['total_price'],0,',','.'); ?>
                                 </td>
+
+                                <!-- STATUS -->
+                                <td>
+                                    <?php 
+                                    if($row['status'] == 'Paid'){
+                                        echo "<span style='color:green;font-weight:bold;'>Paid</span>";
+                                    }
+                                    elseif($row['status'] == 'Cancelled'){
+                                        echo "<span style='color:#c0392b;font-weight:bold;'>Cancelled</span>";
+                                    }
+                                    else{
+                                        echo "<span style='color:#e67e22;font-weight:bold;'>Pending</span>";
+                                    }
+                                    ?>
+                                </td>
+
+                                <!-- PROOF -->
+                                <td>
+                                    <?php if($row['payment_method'] == 'transfer'): ?>
+                                        <a class="action-btn view"
+                                        onclick="openModal('../uploads/<?= $row['proof_photo']; ?>')">
+                                        View
+                                        </a>
+                                    <?php endif ?>
+                                </td>
+
+                                <!-- ACTION -->
+                               <td>
+
+                                    <?php if($row['status'] == 'Pending'): ?>
+
+                                        <a class="action-btn confirm"
+                                        href="?action=confirm&id=<?= $row['id']; ?>">
+                                        Confirm
+                                        </a>
+
+                                        <a class="action-btn cancel"
+                                        href="?action=cancel&id=<?= $row['id']; ?>">
+                                        Cancel
+                                        </a>
+
+                                    <?php elseif($row['status'] == 'Paid'): ?>
+
+                                        <span class="badge success">Ready</span>
+
+                                        <a class="action-btn print"
+                                        href="../admin/print_receipt.php?id=<?= $row['id']; ?>" 
+                                        target="_blank">
+                                        Print
+                                        </a>
+
+                                    <?php elseif($row['status'] == 'Cancelled'): ?>
+
+                                        <span class="badge danger">Cancelled</span>
+
+                                    <?php endif; ?>
+
+                                    </td>
                             </tr>
                         <?php } ?>
                     </tbody>
@@ -279,33 +328,28 @@
         <!-- MODAL -->
         <div class="modal" id="proofModal">
             <div class="modal-content">
-                <img id="proofImage">
+                <img id="proofImage" src="">
                 <br>
-                <button class="close-btn" onclick="closeModal()">
-                Close
-                </button>
+                <button class="close-btn" onclick="closeModal()">Close</button>
             </div>
         </div>
 
         <script>
-
         function openModal(imagePath){
-        document.getElementById('proofImage').src=imagePath;
-        document.getElementById('proofModal').classList.add('active');
+            document.getElementById('proofImage').src = imagePath;
+            document.getElementById('proofModal').classList.add('active');
         }
 
         function closeModal(){
-        document.getElementById('proofModal').classList.remove('active');
+            document.getElementById('proofModal').classList.remove('active');
         }
 
-        window.onclick=function(e){
-        let modal=document.getElementById('proofModal');
-        if(e.target==modal){
-        closeModal();
+        window.onclick = function(e){
+            const modal = document.getElementById('proofModal');
+            if(e.target == modal){
+                closeModal();
+            }
         }
-        }
-
         </script>
-
     </body>
 </html>

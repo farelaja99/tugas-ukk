@@ -10,11 +10,21 @@ if (isset($_POST['refund'])) {
     $target = mysqli_real_escape_string($conn, $_POST['refund_target']);
     $id     = intval($_GET['id']);
 
+    // upload file
+    $file_name = $_FILES['refund_proof']['name'];
+    $tmp       = $_FILES['refund_proof']['tmp_name'];
+
+    // kasih nama unik biar ga ketimpa
+    $new_name = time() . "_" . $file_name;
+
+    move_uploaded_file($tmp, "../uploads/" . $new_name);
+
     mysqli_query($conn, "
         UPDATE transactions SET
             refund_status = 'requested',
             refund_reason = '$reason',
             refund_target = '$target',
+            refund_proof  = '$new_name',
             refund_date = NOW()
         WHERE id = '$id'
     ");
@@ -132,20 +142,20 @@ if (isset($_POST['refund'])) {
     <body>
         <div class="refund-box">
             <div class="title">
-                <i class="fa-solid fa-rotate-left"></i> Ajukan Refund
+                <i class="fa-solid fa-rotate-left"></i> Request a Refund
             </div>
             <div class="subtitle">
-                Jelaskan alasan kamu biar admin ga nebak-nebak sendiri
+                Explain your reasons for wanting a refund.
             </div>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <label style="font-weight:bold; color:#215E61;">
-                    Alasan Refund
+                    Reason for Refund
                 </label>
                 <textarea name="reason" placeholder="Contoh: Barang rusak, salah ukuran, dll..." required></textarea>
 
                 <label style="font-weight:bold; color:#215E61;">
-                    Refund Dikirim Ke
+                    Refund Sent To
                 </label>
                 <input 
                     type="text" 
@@ -153,13 +163,18 @@ if (isset($_POST['refund'])) {
                     placeholder="Contoh: BCA - 123456789 a/n Nama Kamu / Dana / OVO"
                     required
                 >
-                <button class="btn" name="refund">
-                    Kirim Permintaan Refund
+                <label style="font-weight:bold; color:#215E61;">
+                    upload evidence
+                </label>
+
+                <input type="file" name="refund_proof" accept="image/*" required>
+                                <button class="btn" name="refund">
+                   Submit a Refund Request
                 </button>
 
             </form>
             <a href="riwayat.php" class="back">
-                ← Kembali ke Riwayat
+                ← Back to History
             </a>
         </div>
     </body>

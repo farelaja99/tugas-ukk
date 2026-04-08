@@ -35,6 +35,7 @@
         SELECT t.*, p.name AS product_name, p.category
         FROM transactions t
         JOIN products p ON t.product_id = p.id
+        WHERE t.checkout_status = 'checkout'
         ORDER BY t.id DESC
     ");
 ?>
@@ -114,15 +115,42 @@
             color:#215E61;
         }
 
-        .action-btn{
+       .action-btn{
             padding:7px 14px;
             border-radius:8px;
             font-size:13px;
             text-decoration:none;
             color:white;
-            margin:0 3px;
+            margin:2px;
             display:inline-block;
-            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .confirm{ background:#215E61; }
+        .confirm:hover{ background:#174446; }
+
+        .cancel{ background:#999; }
+        .cancel:hover{ background:#777; }
+
+        .print{ background:#215E61; }
+        .print:hover{ background:#174446; }
+
+        .badge{
+            padding:5px 10px;
+            border-radius:8px;
+            font-size:12px;
+            font-weight:bold;
+            display:inline-block;
+        }
+
+        .success{
+            background:#d4edda;
+            color:#155724;
+        }
+
+        .danger{
+            background:#f8d7da;
+            color:#721c24;
         }
 
         .view{ background:#215E61; }
@@ -156,10 +184,13 @@
         }
 
         .modal-content img{
-            max-width:500px;
+            max-width:90%;
+            max-height:80vh;    
+            width:auto;
+            height:auto;
+            object-fit:contain;
             border-radius:10px;
         }
-
         .close-btn{
             margin-top:15px;
             background:#c0392b;
@@ -246,36 +277,46 @@
 
                                 <!-- PROOF -->
                                 <td>
-                                    <a class="action-btn view"
-                                    onclick="openModal('../uploads/<?= $row['proof_photo']; ?>')">
-                                    View
-                                    </a>
+                                    <?php if($row['payment_method'] == 'transfer'): ?>
+                                        <a class="action-btn view"
+                                        onclick="openModal('../uploads/<?= $row['proof_photo']; ?>')">
+                                        View
+                                        </a>
+                                    <?php endif ?>
                                 </td>
 
                                 <!-- ACTION -->
-                                <td>
-                                    <!-- Confirm (selalu ada) -->
-                                    <a class="action-btn"
-                                    style="background:#27ae60;"
-                                    href="?action=confirm&id=<?= $row['id']; ?>">
-                                    Confirm
-                                    </a>
+                               <td>
 
-                                    <!-- Cancel (selalu ada) -->
-                                    <a class="action-btn"
-                                    style="background:#c0392b;"
-                                    href="?action=cancel&id=<?= $row['id']; ?>">
-                                    Cancel
-                                    </a>
-                                        
-                                    <!-- Print -->
-                                    <a class="action-btn print"
-                                    href="../admin/print_receipt.php?id=<?= $row['id']; ?>" 
-                                    target="_blank">
-                                    Print
-                                    </a>
+                                    <?php if($row['status'] == 'Pending'): ?>
 
-                                </td>
+                                        <a class="action-btn confirm"
+                                        href="?action=confirm&id=<?= $row['id']; ?>">
+                                        Confirm
+                                        </a>
+
+                                        <a class="action-btn cancel"
+                                        href="?action=cancel&id=<?= $row['id']; ?>">
+                                        Cancel
+                                        </a>
+
+                                    <?php elseif($row['status'] == 'Paid'): ?>
+
+                                        <span class="badge success">Ready</span>
+
+                                        <a class="action-btn print"
+                                        href="../admin/print_receipt.php?id=<?= $row['id']; ?>" 
+                                        target="_blank">
+                                        Print
+                                        </a>
+
+                                    <?php elseif($row['status'] == 'Cancelled'): ?>
+
+                                        <span class="badge danger">Cancelled</span>
+
+                                    <?php endif; ?>
+
+                                    </td>
                             </tr>
                         <?php } ?>
                     </tbody>

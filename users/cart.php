@@ -10,10 +10,8 @@
     $username = $_SESSION['username'];
 
 
-    // =======================
     // UPDATE QTY
-    // =======================
-    if (isset($_POST['update_qty'])) {
+    if (isset($_POST['transaction_id']) && isset($_POST['qty'])) {
 
         $transaction_id = intval($_POST['transaction_id']);
         $qty            = intval($_POST['qty']);
@@ -39,9 +37,8 @@
     }
 
 
-    // =======================
+
     // REMOVE ITEM FROM CART
-    // =======================
     if (isset($_GET['remove'])) {
 
         $transaction_id = intval($_GET['remove']);
@@ -58,9 +55,7 @@
     }
 
 
-    // =======================
     // GET CART DATA
-    // =======================
     $query = mysqli_query($conn, "
         SELECT 
             transactions.id AS transaction_id,
@@ -365,8 +360,7 @@
                                         Rp <?= number_format($item['price'], 0, ',', '.') ?>
                                     </td>
                                     <td>
-                                        <form method="POST">
-
+                                        <form method="POST" class="qty-form">
                                             <input type="hidden"
                                                 name="transaction_id"
                                                 value="<?= $item['transaction_id'] ?>">
@@ -375,12 +369,7 @@
                                                 name="qty"
                                                 value="<?= $item['quantity'] ?>"
                                                 min="1"
-                                                style="width:60px;">
-
-                                            <button class="btn btn-update"
-                                                name="update_qty">
-                                                Update
-                                            </button>
+                                                class="qty-input">
                                         </form>
                                     </td>
                                     <td>
@@ -399,7 +388,7 @@
                         <?php else : ?>
                             <tr>
                                 <td colspan="6">
-                                    Cart kosong
+                                  Empty cart
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -421,6 +410,12 @@
 
             </div>
         </div>
-
+        <script>
+        document.querySelectorAll('.qty-input').forEach(input => {
+            input.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        });
+        </script>
     </body>
 </html>

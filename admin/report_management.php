@@ -8,7 +8,7 @@
         header("Location: report_management.php");
         exit;
     }
-
+    
     //hapus transaksi
     if(isset($_GET['delete_transaction'])){
         $id = $_GET['delete_transaction'];
@@ -16,7 +16,7 @@
         header("Location: report_management.php");
         exit;
     }
-
+    
     //ambil data
     $queryStock = mysqli_query($conn, "SELECT * FROM products");
     $querySales = mysqli_query($conn, "
@@ -30,7 +30,7 @@
         WHERE t.checkout_status = 'checkout'
         GROUP BY t.product_id
     ");
-    $queryTransaction = mysqli_query($conn, "
+   $queryTransaction = mysqli_query($conn, "
         SELECT 
             t.id,
             t.customer_name,
@@ -44,15 +44,16 @@
             p.category
         FROM transactions t
         JOIN products p ON t.product_id = p.id
-        WHERE t.status = 'Paid'
+        WHERE t.checkout_status = 'checkout'
     ");
+
+
 ?>
 
 <!DOCTYPE html>
 <html>
     <head>
         <title>Management Laporan</title>
-
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -65,29 +66,28 @@
             }
 
             body{
-                background:#338C91;
+                background:#1E1E1E;
             }
 
             /* HEADER */
             .header{
-                background:#215E61;
+                background: #215E61;
                 padding:18px 50px;
                 display:flex;
                 justify-content:space-between;
                 align-items:center;
-                color:#F5FBE6;
+                color:white;
             }
 
             .logo{
                 font-size:38px;
                 font-weight:bold;
                 font-style:italic;
-                color:#F5FBE6;
             }
 
             .back-btn{
-                background:#F5FBE6;
-                color:#215E61;
+                background:#e5e9d5;
+                color:#1b4e50;
                 padding:8px 18px;
                 border-radius:8px;
                 text-decoration:none;
@@ -105,7 +105,7 @@
 
             /* CONTENT */
             .content{
-                background:#338C91;
+                background:#3C8D8B;
                 padding:40px;
                 min-height:100vh;
             }
@@ -121,56 +121,80 @@
                 padding:10px 20px;
                 border:none;
                 cursor:pointer;
-                background:#215E61;
-                color:#F5FBE6;
+                background:#2F6F6D;
+                color:white;
                 border-radius:6px;
                 font-weight:600;
             }
 
             .tab-btn.active{
-                background:#F5FBE6;
-                color:#215E61;
+                background:#E6EAD7;
+                color:#2F6F6D;
             }
 
             /* TABLE */
             table{
                 width:100%;
                 border-collapse:collapse;
-                background:#F5FBE6;
+                background:white;
                 border-radius:6px;
                 overflow:hidden;
             }
 
             th{
-                background:#215E61;
-                color:#F5FBE6;
+                background:#2F6F6D;
+                color:white;
                 padding:12px;
             }
 
             td{
                 padding:10px;
                 text-align:center;
-                border-bottom:1px solid #338C91;
-                color:#215E61;
-                background:#F5FBE6;
+                border-bottom:1px solid #ddd;
             }
 
             tr:hover{
-                background:#338C91;
-                color:#F5FBE6;
+                background:#f2f2f2;
             }
 
-            /* BUTTON */
-            .btn-action{
-                background:#338C91;
-                color:#F5FBE6;
+            .btn-group {
+                display:flex;
+                justify-content:center;
+                gap:8px;
+            }
+
+            .btn {
                 padding:6px 12px;
-                border-radius:4px;
+                border-radius:6px;
                 text-decoration:none;
                 font-size:13px;
+                display:inline-flex;
+                align-items:center;
+                gap:6px;
+                font-weight:600;
+                transition:0.2s;
             }
 
-            /* TAB CONTENT */
+            /* DELETE (danger) */
+            .btn-delete {
+                background:#e74c3c;
+                color:white;
+            }
+
+            .btn-delete:hover {
+                background:#c0392b;
+            }
+
+            /* VIEW / PRINT */
+            .btn-view {
+                background:#215E61;
+                color:white;
+            }
+
+            .btn-view:hover {
+                background:#174446;
+            }
+
             .tab-content{
                 display:none;
             }
@@ -216,20 +240,21 @@
                     </thead>
                     <tbody>
                         <?php $no=1; while($row=mysqli_fetch_assoc($queryStock)){ ?>
-                        <tr>
-                            <td><?= $no++ ?></td>
-                            <td><?= $row['name'] ?></td>
-                            <td><?= $row['category'] ?></td>
-                            <td><?= $row['stock'] ?></td>
-                            <td>
-                               <a href="?delete_product=<?= $row['id'] ?>"
-                                    onclick="return confirm('Yakin mau hapus produk ini?')"
-                                    class="btn-action">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </a>
-
-                            </td>
-                        </tr>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= $row['name'] ?></td>
+                                <td><?= $row['category'] ?></td>
+                                <td><?= $row['stock'] ?></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="?delete_product=<?= $row['id'] ?>"
+                                            onclick="return confirm('Delete this product?')"
+                                            class="btn btn-delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         <?php } ?>
                     </tbody>
                 </table>
@@ -266,19 +291,17 @@
                 <table>
                     <thead>
                         <tr>
-                            <tr>
-                                <th>No</th>
-                                <th>Customer</th>
-                                <th>Product</th>
-                                <th>Category</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                                <th>Payment</th>
-                                <th>Date</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                                <th>Action</th>
-                            </tr>
+                            <th>No</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -311,12 +334,19 @@
                                 <td><?= $row['quantity'] ?></td>
                                 <td>Rp<?= number_format($row['total_price'],0,',','.') ?></td>
                                 <td>
-                                   <a href="print_receipt.php?id=<?= $row['id'] ?>" 
-                                        target="_blank"
-                                        class="btn-action">
-                                        <i class="fa-solid fa-eye"></i> Print Receipt
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="../admin/print_receipt.php?id=<?= $row['id'] ?>" 
+                                            target="_blank"
+                                            class="btn btn-view">
+                                            <i class="fa-solid fa-receipt"></i>
+                                        </a>
 
+                                        <a href="?delete_transaction=<?= $row['id'] ?>"
+                                            onclick="return confirm('Delete this transaction?')"
+                                            class="btn btn-delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php } ?>
@@ -327,16 +357,16 @@
         </div>
 
         <script>
-        function showTab(evt, tabId){
-            const tabs=document.querySelectorAll('.tab-content');
-            const buttons=document.querySelectorAll('.tab-btn');
+            function showTab(evt, tabId){
+                const tabs=document.querySelectorAll('.tab-content');
+                const buttons=document.querySelectorAll('.tab-btn');
 
-            tabs.forEach(tab=>tab.classList.remove('active'));
-            buttons.forEach(btn=>btn.classList.remove('active'));
+                tabs.forEach(tab=>tab.classList.remove('active'));
+                buttons.forEach(btn=>btn.classList.remove('active'));
 
-            document.getElementById(tabId).classList.add('active');
-            evt.currentTarget.classList.add('active');
-        }
+                document.getElementById(tabId).classList.add('active');
+                evt.currentTarget.classList.add('active');
+            }
         </script>
 
     </body>

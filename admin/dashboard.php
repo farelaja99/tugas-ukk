@@ -149,8 +149,18 @@
                     <p>Manage and review report</p>
                 </a>
 
-            </div>
+                 <a href="refund.php" class="card">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <h3>Refund Management</h3>
+                    <p>Process and manage refund requests</p>
+                </a>
 
+                <a href="shipping.php" class="card">
+                    <i class="fa-solid fa-truck"></i>
+                    <h3>Shipping Management</h3>
+                    <p>Handle product delivery and tracking</p>
+                </a>
+            </div>
         </div>
     </body>
 </html>

@@ -169,7 +169,7 @@ if (isset($_POST['update'])) {
         <h2><i class="fa fa-user"></i> Profile</h2>
 
         <?php if (isset($_GET['success'])): ?>
-            <div class="success">Profile berhasil diupdate!</div>
+            <div class="success">Profile updated successfully!</div>
         <?php endif; ?>
 
         <form method="POST">
@@ -195,7 +195,7 @@ if (isset($_POST['update'])) {
         </form>
 
         <a href="dashboard.php" class="back">
-            <i class="fa fa-arrow-left"></i> Kembali ke Dashboard
+            <i class="fa fa-arrow-left"></i> Back to Dashboard
         </a>
 
     </div>

@@ -2,7 +2,7 @@
 session_start();
 include "../config/database.php";
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'petugas') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
     header("Location: ../auth/login.php");
     exit();
 }

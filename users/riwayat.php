@@ -9,6 +9,42 @@
 
     $username = $_SESSION['username'];
 
+// CANCEL ORDER
+
+    if (isset($_GET['cancel'])) {
+
+        $id = intval($_GET['cancel']);
+
+        // ambil data buat balikin stock
+        $data = mysqli_fetch_assoc(mysqli_query($conn, "
+            SELECT product_id, quantity 
+            FROM transactions 
+            WHERE id='$id'
+            AND customer_name='$username'
+        "));
+
+        if ($data) {
+
+            // update status jadi cancelled
+            mysqli_query($conn, "
+                UPDATE transactions
+                SET status='Cancelled'
+                WHERE id='$id'
+                AND status IN ('Pending','Paid')
+            ");
+
+            // balikin stock
+            mysqli_query($conn, "
+                UPDATE products
+                SET stock = stock + {$data['quantity']}
+                WHERE id = {$data['product_id']}
+            ");
+        }
+
+        header("Location: riwayat.php");
+        exit();
+    }
+
 
     //ambil data
     $query = mysqli_query($conn, "
@@ -19,6 +55,10 @@
             t.status,
             t.created_at,
             t.refund_status,
+            t.payment_method,
+            t.shipping_status,
+            t.shipping_courier,
+            t.tracking_number,
             p.name,
             p.photo
         FROM transactions t
@@ -112,7 +152,8 @@
             }
 
             .card img {
-                width: 70px;
+                width: 200px;
+                height: 220px
                 border-radius: 8px;
             }
 
@@ -180,6 +221,26 @@
                 text-align: center;
             }
 
+            .shipping {
+                padding: 6px 12px;
+                border-radius: 6px;
+                color: white;
+                font-size: 12px;
+                margin-top: 5px;
+            }
+
+            .diproses {
+                background: orange;
+            }
+
+            .dikirim {
+                background: #3498db;
+            }
+
+            .selesai {
+                background: #27ae60;
+            }
+
         </style>
     </head>
     <body>
@@ -228,6 +289,9 @@
                                 <div class="price">
                                     Rp <?= number_format($t['total_price'], 0, ',', '.') ?>
                                 </div>
+                                <div class="payment_method">
+                                    <? htmlspecialchars($t['payment_method'])?>
+                                </div>
                             </div>
                         </div>
 
@@ -256,21 +320,48 @@
                                     Refund Rejected
                                 </div>
                             <?php endif; ?>
+                            <?php if (!empty($t['shipping_status'])): ?>
+                                <div class="item">
+                                    Shipping: <?= ucfirst($t['shipping_status']) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($t['shipping_courier'])): ?>
+                                <div class="item">
+                                    Courier: <?= $t['shipping_courier'] ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($t['tracking_number'])): ?>
+                                <div class="item">
+                                    Tracking No: <?= $t['tracking_number'] ?>
+                                </div>
+                            <?php endif; ?>
 
                             <!-- BUTTON REFUND -->
-                            <?php if ($t['status'] == 'Paid' && $t['refund_status'] == 'none'): ?>
+                            <?php if ($t['payment_method'] == 'transfer' && $t['refund_status'] == 'none'): ?>
                                 <a href="refund.php?id=<?= $t['id'] ?>" 
                                 style="display:inline-block; margin-top:8px; background:#c0392b; color:white; padding:6px 10px; border-radius:6px; text-decoration:none;">
-                                    Ajukan Refund
+                                    request a refund
                                 </a>
                             <?php endif; ?>
 
+                            <?php if (
+                                ($t['status'] == 'Pending' || $t['status'] == 'Paid') 
+                                && ($t['shipping_status'] == 'processed' || $t['shipping_status'] == 'pending')
+                            ): ?>
+                                <a href="?cancel=<?= $t['id'] ?>"
+                                    onclick="return confirm('Cancel this order?')"
+                                    style="background:#e74c3c; color:white; padding:6px 10px; border-radius:6px; text-decoration:none; margin-top:5px;">
+                                    Cancel Order
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="empty">
-                    Belum ada transaksi
+                    There are no transactions yet
                 </div>
             <?php endif; ?>
         </div>
