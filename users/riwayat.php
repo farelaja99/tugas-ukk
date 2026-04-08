@@ -18,6 +18,7 @@
             t.total_price,
             t.status,
             t.created_at,
+            t.refund_status,
             p.name,
             p.photo
         FROM transactions t
@@ -50,7 +51,7 @@
 
             /* SIDEBAR */
             .sidebar {
-                width: 240px;
+                width: 200px;
                 height: 100vh;
                 background: #215E61;
                 position: fixed;
@@ -127,7 +128,16 @@
 
             /* RIGHT */
             .card-right {
-                text-align: right;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end; /* tetep rata kanan */
+                gap: 5px;
+            }
+
+            .card-right a {
+                font-size: 13px;
+                padding: 6px 10px;
+                white-space: nowrap;
             }
 
 
@@ -232,6 +242,29 @@
                             <div class="date">
                                 <?= date("M d, Y", strtotime($t['created_at'])) ?>
                             </div>
+                              <!-- REFUND STATUS -->
+                            <?php if ($t['refund_status'] == 'requested'): ?>
+                                <div style="color:orange; font-weight:bold;">
+                                    Refund Requested
+                                </div>
+                            <?php elseif ($t['refund_status'] == 'approved'): ?>
+                                <div style="color:green; font-weight:bold;">
+                                    Refund Approved
+                                </div>
+                            <?php elseif ($t['refund_status'] == 'rejected'): ?>
+                                <div style="color:red; font-weight:bold;">
+                                    Refund Rejected
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- BUTTON REFUND -->
+                            <?php if ($t['status'] == 'Paid' && $t['refund_status'] == 'none'): ?>
+                                <a href="refund.php?id=<?= $t['id'] ?>" 
+                                style="display:inline-block; margin-top:8px; background:#c0392b; color:white; padding:6px 10px; border-radius:6px; text-decoration:none;">
+                                    Ajukan Refund
+                                </a>
+                            <?php endif; ?>
+
                         </div>
                     </div>
                 <?php endforeach; ?>

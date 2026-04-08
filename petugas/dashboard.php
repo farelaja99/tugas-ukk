@@ -62,7 +62,7 @@
 
             .cards{
                 display:grid;
-                grid-template-columns:repeat(3, 1fr);
+                grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
                 gap:40px;
             }
 
@@ -126,6 +126,12 @@
                     <i class="fa-solid fa-file-lines"></i>
                     <h3>Report Management</h3>
                     <p>Manage and review report</p>
+                </a>
+
+                <a href="refund.php" class="card">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <h3>Refund Management</h3>
+                    <p>Process and manage refund requests</p>
                 </a>
 
             </div>

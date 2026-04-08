@@ -78,7 +78,7 @@
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background: #338C91;
-            overflow: hidden; /* biar body ga ikut scroll */
+            overflow: aoto; 
         }
 
         /* HEADER */
@@ -124,7 +124,7 @@
         /* LAYOUT */
         .container {
             display: flex;
-            height: calc(100vh - 70px); 
+            min-height: calc(100vh - 70px); 
         }
 
         /* SIDEBAR */
@@ -203,7 +203,7 @@
             flex: 1;
             padding: 40px;
             overflow-y: auto; 
-            height: 100%;
+            height: calc(100vh-70px);
         }
         .product-grid {
             display: grid;
@@ -215,13 +215,10 @@
             background: #e5e9d5;
             border-radius: 16px;
             padding: 15px;
-            text-align: left;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* ini kuncinya */
         }
-
         .card:hover {
             transform: translateY(-8px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -356,17 +353,14 @@
 
                         <?php while ($row = mysqli_fetch_assoc($products)): ?>
                             <div class="card">
+                                <div>
+                                    <img src="../uploads/<?= $row['photo']; ?>">
 
-                                <div class="category-badge">
-                                    <?= $row['category']; ?>
-                                </div>
+                                    <h4><?= $row['name']; ?></h4>
 
-                                <img src="../uploads/<?= $row['photo']; ?>">
-
-                                <h4><?= $row['name']; ?></h4>
-
-                                <div class="price">
-                                    Rp <?= number_format($row['price'], 0, ',', '.'); ?>
+                                    <div class="price">
+                                        Rp <?= number_format($row['price'], 0, ',', '.'); ?>
+                                    </div>
                                 </div>
 
                                 <form method="POST">

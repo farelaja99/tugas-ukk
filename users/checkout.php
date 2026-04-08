@@ -72,6 +72,23 @@
             );
         }
 
+        if ($method == "transfer") {
+
+            if (!isset($_FILES['proof']) || $_FILES['proof']['error'] == 4) {
+                echo "<script>alert('Bukti transfer wajib diupload!'); window.history.back();</script>";
+                exit();
+            }
+
+            // validasi format file
+            $allowed = ['jpg','jpeg','png'];
+            $ext = strtolower(pathinfo($_FILES['proof']['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowed)) {
+                echo "<script>alert('Format file harus JPG / PNG!'); window.history.back();</script>";
+                exit();
+            }
+        }
+
 
         // START TRANSACTION (biar aman)
         mysqli_begin_transaction($conn);
@@ -405,12 +422,12 @@
                     
                     <div class="payment-method">
                         <label>
-                            <input type="radio" name="method" value="transfer" checked>
-                            Transfer
+                            <input type="radio" name="method" value="cod" checked>
+                            COD
                         </label>
                         <label>
-                            <input type="radio" name="method" value="cod">
-                            COD
+                            <input type="radio" name="method" value="transfer">
+                            Transfer
                         </label>
                     </div>
                    <div id="proof-box" style="display:none;">
@@ -420,6 +437,11 @@
 
                         <label>Upload Bukti Transfer</label>
                         <input type="file" name="proof">
+                         <?php if (empty($user['phone']) || empty($user['address'])): ?>
+                            <p style="color:red;">
+                                Harap lengkapi data profile dulu biar ga ribet pas checkout
+                            </p>
+                        <?php endif; ?>
 
                     </div>
                     <button class="btn" name="checkout">
