@@ -152,20 +152,101 @@ $history = mysqli_query($conn, "
                 transition: 0.3s;
             }
 
-            .approve {
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #F5FBE6;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .table th {
                 background: #215E61;
+                color: white;
+                padding: 12px;
+                text-align: center;
             }
 
-            .approve:hover {
-                background: #174446;
+            .table td {
+                padding: 12px;
+                text-align: center;
+                border-bottom: 1px solid #ddd;
+                color: #215E61;
             }
 
-            .reject {
-                background: #999;
+            .table tr:hover {
+                background: #e5e9d5;
             }
 
-            .reject:hover {
-                background: #777;
+            .table img {
+                width: 70px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 8px;
+            }
+
+            /* BUTTON */
+            .btn {
+                padding: 6px 10px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                color: white;
+                margin: 2px;
+            }
+
+            .approve { background: #215E61; }
+            .approve:hover { background: #174446; }
+
+            .reject { background: #999; }
+            .reject:hover { background: #777; }
+
+            /* BADGE */
+            .badge {
+                padding: 5px 10px;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .danger {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 999;
+                padding-top: 60px;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+            }
+
+            .modal-content {
+                display: block;
+                margin: auto;
+                max-width: 70%;
+                max-height: 80vh;
+                border-radius: 10px;
+            }
+
+            .close {
+                position: absolute;
+                top: 20px;
+                right: 40px;
+                color: white;
+                font-size: 35px;
+                font-weight: bold;
+                cursor: pointer;
             }
 
         </style>
@@ -180,72 +261,111 @@ $history = mysqli_query($conn, "
                 <a href="dashboard.php">← Back</a>
             </div>
 
-            <h2>There are no transactions yet</h2>
+            <h2>Refund Requests</h2>
 
-            <?php if(mysqli_num_rows($query) == 0): ?>
-                <p>No refund request.</p>
-            <?php endif; ?>
-
-            <?php while($r = mysqli_fetch_assoc($query)): ?>
-
-            <div class="card">
-                <div class="card-left">
-                    <b><?= $r['name'] ?></b><br><br>
-
-                    <b>User:</b> <?= $r['customer_name'] ?><br>
-                    <b>Qty:</b> <?= $r['quantity'] ?><br>
-                    <b>Reason:</b> <?= $r['refund_reason'] ?><br>
-                    <b>Send Refund Here:</b> <?= $r['refund_target'] ?><br>
-
-                    <form method="POST" style="margin-top:10px;">
-                        <input type="hidden" name="id" value="<?= $r['id'] ?>">
-
-                        <button class="btn approve" name="approve">Approve</button>
-                        <button class="btn reject" name="reject">Reject</button>
-                    </form>
-                </div>
-
-                <div class="card-right">
-                    <?php if(!empty($r['refund_proof'])): ?>
-                        <img src="../uploads/<?= $r['refund_proof'] ?>" onclick="previewImage(this.src)">
-                    <?php else: ?>
-                        <i>There is no evidence</i>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>User</th>
+                        <th>Qty</th>
+                        <th>Reason</th>
+                        <th>Refund To</th>
+                        <th>Proof</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(mysqli_num_rows($query) == 0): ?>
+                        <tr><td colspan="7">No refund request</td></tr>
                     <?php endif; ?>
-                </div>
-            </div>
 
-            <?php endwhile; ?>
+                    <?php while($r = mysqli_fetch_assoc($query)): ?>
+                    <tr>
+                        <td><?= $r['name'] ?></td>
+                        <td><?= $r['customer_name'] ?></td>
+                        <td><?= $r['quantity'] ?></td>
+                        <td><?= $r['refund_reason'] ?></td>
+                        <td><?= $r['refund_target'] ?></td>
+                        <td>
+                            <?php if(!empty($r['refund_proof'])): ?>
+                                <img src="../uploads/<?= $r['refund_proof'] ?>" onclick="previewImage(this.src)">
+                            <?php else: ?>
+                                <i>No proof</i>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <form method="POST">
+                                <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                                <button class="btn approve" name="approve">Approve</button>
+                                <button class="btn reject" name="reject">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
 
-            <h2 style="margin-top:50px;">Refund History</h2>
-            <?php if(mysqli_num_rows($history) == 0): ?>
-                <p>No refund history.</p>
-            <?php endif; ?>
+            <h2 style="margin-top:40px;">Refund History</h2>
 
-            <?php while($h = mysqli_fetch_assoc($history)): ?>
-                <div class="card">
-                    <div class="card-left">
-                        <b><?= $h['name'] ?></b><br><br>
-                        <b>User:</b> <?= $h['customer_name'] ?><br>
-                        <b>Qty:</b> <?= $h['quantity'] ?><br>
-                        <b>Reason:</b> <?= $h['refund_reason'] ?><br>
-                        <b>Send Refund Here:</b> <?= $h['refund_target'] ?><br>
-                        <b>Status:</b> 
-                        <?php if($h['refund_status'] == 'approved'): ?>
-                            <span style="color:green;">Approved</span>
-                        <?php else: ?>
-                            <span style="color:red;">Rejected</span>
-                        <?php endif; ?>
-                    </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>User</th>
+                        <th>Qty</th>
+                        <th>Reason</th>
+                        <th>Refund To</th>
+                        <th>Status</th>
+                        <th>Proof</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(mysqli_num_rows($history) == 0): ?>
+                        <tr><td colspan="7">No history</td></tr>
+                    <?php endif; ?>
 
-                    <div class="card-right">
-                        <?php if(!empty($h['refund_proof'])): ?>
-                            <img src="../uploads/<?= $h['refund_proof'] ?>" onclick="previewImage(this.src)">
-                        <?php else: ?>
-                            <i>No proof</i>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>        
+                    <?php while($h = mysqli_fetch_assoc($history)): ?>
+                    <tr>
+                        <td><?= $h['name'] ?></td>
+                        <td><?= $h['customer_name'] ?></td>
+                        <td><?= $h['quantity'] ?></td>
+                        <td><?= $h['refund_reason'] ?></td>
+                        <td><?= $h['refund_target'] ?></td>
+                        <td>
+                            <?php if($h['refund_status'] == 'approved'): ?>
+                                <span class="badge success">Approved</span>
+                            <?php else: ?>
+                                <span class="badge danger">Rejected</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if(!empty($h['refund_proof'])): ?>
+                                <img src="../uploads/<?= $h['refund_proof'] ?>" onclick="previewImage(this.src)">
+                            <?php else: ?>
+                                <i>No proof</i>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="imageModal" class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="imgPreview">
+        </div>
+
+        <script>
+        function previewImage(src){
+            document.getElementById("imageModal").style.display = "block";
+            document.getElementById("imgPreview").src = src;
+        }
+
+        function closeModal(){
+            document.getElementById("imageModal").style.display = "none";
+        }
+        </script>
     </body>
 </html>
